@@ -1,0 +1,42 @@
+from boltiot import  Bolt
+import json, time
+import pandas as pd
+import csv
+from datetime import datetime
+timestamp = 1545730073
+dt_object = datetime.fromtimestamp(timestamp)
+itr = 1
+api_key="0*****************************8"
+device_id="BOLT****"
+minimum_limit = 100
+dataList = []
+mybolt=Bolt(api_key,device_id)
+print(format("Auto LED Controller",'_^50'))
+error='{"success": "0", "message": "A Connection error occurred"}'
+offlne='{"value": "offline", "time": null, "success": 1}'
+result = mybolt.isOnline()
+if result == error:
+    print("\n Checking connections of your computer....")
+elif result == offlne:
+    print("\n Bolt Device is offline....")
+else:
+    while itr :
+        d="\n"
+        print ("\n Recognizing Value from Sensor.......")
+        response = mybolt.analogRead('A0')
+        data = json.loads(response)
+        inten= int(data['value'])          
+        print("value from light sensor is: " + str(inten))
+        if inten < minimum_limit :
+            result = mybolt.digitalWrite('0','HIGH')
+            print("LED is Sucessfully Turned ON")
+        else:
+            result = mybolt.digitalWrite('0','LOW')
+            print("LED is Sucessfully Turned OFF")
+        d="light:"+","+str(inten)+","+str(dt_object)+",".split(",")
+        dataList.append(d)
+        time.sleep(10)
+    with open("C:/Users/dibya/Desktop/out.csv", "w") as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        for line in dataList:
+            writer.writerow(line)
